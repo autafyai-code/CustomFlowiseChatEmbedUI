@@ -574,33 +574,23 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     
     // Get all messages
     const messages = chatContainer.querySelectorAll('[class*="message"], [class*="bubble"], > div');
+    
     if (messages.length === 0) {
-      chatContainer.scrollTo(0, chatContainer.scrollHeight);
+      chatContainer.scrollTo(0, 0);
       return;
     }
     
-    // Find last user message
+    // Get the LAST message (most recent bot response)
     const messagesArray = Array.from(messages);
-    let lastUserIndex = -1;
-    for (let i = messagesArray.length - 1; i >= 0; i--) {
-      const msg = messagesArray[i] as HTMLElement;
-      if (msg.className && (msg.className.includes('user') || msg.className.includes('guest'))) {
-        lastUserIndex = i;
-        break;
-      }
-    }
+    const lastMessage = messagesArray[messagesArray.length - 1] as HTMLElement;
     
-    if (lastUserIndex >= 0) {
-      // Show user message + bot response
-      const userMsg = messagesArray[lastUserIndex] as HTMLElement;
-      userMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      setTimeout(() => {
-       if (chatContainer) chatContainer.scrollTop -= 100; // Adjust to show 2-3 sentencesAdjust to show 2-3 sentences
-      }, 300);
-    } else {
-      // No user message yet, scroll to bottom
-      chatContainer.scrollTo(0, chatContainer.scrollHeight);
-    }
+    // Scroll to the TOP of the last message
+    lastMessage.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'start',      // ← This is the KEY change
+      inline: 'nearest'
+    });
+    
   }, 50);
 };
 
