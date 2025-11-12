@@ -569,10 +569,40 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
   });
 
   const scrollToBottom = () => {
-    setTimeout(() => {
-      chatContainer?.scrollTo(0, chatContainer.scrollHeight);
-    }, 50);
-  };
+  setTimeout(() => {
+    if (!chatContainer) return;
+    
+    // Get all messages
+    const messages = chatContainer.querySelectorAll('[class*="message"], [class*="bubble"], > div');
+    if (messages.length === 0) {
+      chatContainer.scrollTo(0, chatContainer.scrollHeight);
+      return;
+    }
+    
+    // Find last user message
+    const messagesArray = Array.from(messages);
+    let lastUserIndex = -1;
+    for (let i = messagesArray.length - 1; i >= 0; i--) {
+      const msg = messagesArray[i] as HTMLElement;
+      if (msg.className && (msg.className.includes('user') || msg.className.includes('guest'))) {
+        lastUserIndex = i;
+        break;
+      }
+    }
+    
+    if (lastUserIndex >= 0) {
+      // Show user message + bot response
+      const userMsg = messagesArray[lastUserIndex] as HTMLElement;
+      userMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      setTimeout(() => {
+       if (chatContainer) chatContainer.scrollTop -= 100; // Adjust to show 2-3 sentencesAdjust to show 2-3 sentences
+      }, 300);
+    } else {
+      // No user message yet, scroll to bottom
+      chatContainer.scrollTo(0, chatContainer.scrollHeight);
+    }
+  }, 50);
+};
 
   // Helper function to manage TTS action flag
   const setTTSAction = (isActive: boolean) => {
