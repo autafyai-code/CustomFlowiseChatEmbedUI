@@ -568,30 +568,33 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     }, 50);
   });
 
-  const scrollToBottom = () => {
+ const scrollToBottom = () => {
   setTimeout(() => {
     if (!chatContainer) return;
-    
+
     // Get all messages
     const messages = chatContainer.querySelectorAll('[class*="message"], [class*="bubble"], > div');
-    
+
     if (messages.length === 0) {
-      chatContainer.scrollTo(0, 0);
+      chatContainer.scrollTop = 0;
       return;
     }
-    
+
     // Get the LAST message (most recent bot response)
     const messagesArray = Array.from(messages);
     const lastMessage = messagesArray[messagesArray.length - 1] as HTMLElement;
+
+    if (!lastMessage) return;
+
+    // Calculate scroll position to show TOP of last message
+    const scrollPosition = lastMessage.offsetTop;
     
-    // Scroll to the TOP of the last message
-    lastMessage.scrollIntoView({ 
-      behavior: 'smooth',
-      block: 'start',      // ← This is the KEY change
-      inline: 'nearest'
+    // Scroll directly to that position
+    chatContainer.scrollTo({
+      top: scrollPosition,
+      behavior: 'smooth'
     });
-    
-  }, 50);
+  }, 150);
 };
 
   // Helper function to manage TTS action flag
