@@ -568,34 +568,11 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     }, 50);
   });
 
- const scrollToBottom = () => {
-  setTimeout(() => {
-    if (!chatContainer) return;
-
-    // Get all messages
-    const messages = chatContainer.querySelectorAll('[class*="message"], [class*="bubble"], > div');
-
-    if (messages.length === 0) {
-      chatContainer.scrollTop = 0;
-      return;
-    }
-
-    // Get the LAST message (most recent bot response)
-    const messagesArray = Array.from(messages);
-    const lastMessage = messagesArray[messagesArray.length - 1] as HTMLElement;
-
-    if (!lastMessage) return;
-
-    // Calculate scroll position to show TOP of last message
-    const scrollPosition = lastMessage.offsetTop;
-    
-    // Scroll directly to that position
-    chatContainer.scrollTo({
-      top: scrollPosition,
-      behavior: 'smooth'
-    });
-  }, 150);
-};
+  const scrollToTopOfLatestMessage = () => {
+    setTimeout(() => {
+      chatContainer?.scrollTo(0, chatContainer.scrollHeight);
+    }, 50);
+  };
 
   // Helper function to manage TTS action flag
   const setTTSAction = (isActive: boolean) => {
@@ -786,7 +763,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     setLoading(false);
     setUserInput('');
     setUploadedFiles([]);
-    scrollToBottom();
+    scrollToTopOfLatestMessage();
   };
 
   const handleDisclaimerAccept = () => {
@@ -952,7 +929,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     setUploadedFiles([]);
     hasSoundPlayed = false;
     setTimeout(() => {
-      scrollToBottom();
+      scrollToTopOfLatestMessage();
     }, 100);
   };
 
@@ -1068,7 +1045,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     }
 
     setLoading(true);
-    scrollToBottom();
+    scrollToTopOfLatestMessage();
 
     let uploads: IUploads = previews().map((item) => {
       return {
@@ -1162,7 +1139,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
         setLoading(false);
         setUserInput('');
         setUploadedFiles([]);
-        scrollToBottom();
+        scrollToTopOfLatestMessage();
       }
       if (result.error) {
         const error = result.error;
@@ -1304,14 +1281,13 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
 
   // Auto scroll chat to bottom (but not during TTS actions)
   createEffect(() => {
-    if (messages()) {
-      if (messages().length > 1 && !isTTSActionRef) {
-        setTimeout(() => {
-          chatContainer?.scrollTo(0, chatContainer.scrollHeight);
-        }, 400);
-      }
+  if (messages()) {
+    if (messages().length > 1 && !isTTSActionRef) {
+      scrollToTopOfLatestMessage();
     }
-  });
+  }
+});
+
 
   createEffect(() => {
     if (props.fontSize && botContainer) botContainer.style.fontSize = `${props.fontSize}px`;
@@ -2616,6 +2592,25 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
                   )}
                 </>
               ) : (
+                 <div class="text-input-wrapper">
+    <style>
+      {`
+        .text-input-wrapper textarea {
+          padding-top: 10px !important;
+          padding-bottom: 10px !important;
+          line-height: 1.4 !important;
+          min-height: 44px !important;
+          max-height: 38vh !important;
+          overflow-y: auto !important;
+          box-sizing: border-box;
+          font-size: 16px;
+        }
+        .text-input-wrapper .text-input,
+        .text-input-wrapper .text-input * {
+          box-sizing: border-box;
+        }
+      `}
+    </style>
                 <TextInput
                   backgroundColor={props.textInput?.backgroundColor}
                   textColor={props.textInput?.textColor}
@@ -2640,6 +2635,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
                   enableInputHistory={true}
                   maxHistorySize={10}
                 />
+                 </div>
               )}
             </div>
             <Badge
